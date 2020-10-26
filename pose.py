@@ -3,9 +3,11 @@ import numpy as np
 import os
 
 dist = np.array([[-0.02357899, 0.32398194, -0.01049933, 0.00349942, -0.2899601]], dtype=np.float32)
+# dist = np.zeros((4, 1))  # Assuming no lens distortion
 mtx = np.array([[551.35925517, 0., 248.33988363],
                 [0., 551.84937767, 309.15983624],
                 [0., 0., 1.]], dtype=np.float32)
+
 
 # dist = np.array([[-6.26163541e-02, 1.10526699e+00 - 1.62313064e-02, -3.25249256e-03, -6.24637994e+00]],
 #                 dtype=np.float32)
@@ -26,7 +28,7 @@ def get_image_point(img):
 
 
 def draw(img, corners, imgpts):
-    corner = tuple(corners[2].ravel())
+    corner = tuple(corners[0].ravel())
     img = cv2.line(img, corner, tuple(imgpts[0].ravel()), (255, 0, 0), 5)
     img = cv2.line(img, corner, tuple(imgpts[1].ravel()), (0, 255, 0), 5)
     img = cv2.line(img, corner, tuple(imgpts[2].ravel()), (0, 0, 255), 5)
@@ -40,7 +42,7 @@ DIR_INPUT = 'data/blob'
 PATH = os.path.join(os.getcwd(), DIR_INPUT)
 images = os.listdir(PATH)
 
-img_path = os.path.join(PATH, images[0])
+img_path = os.path.join(PATH, images[1])
 
 # read image
 
@@ -52,24 +54,40 @@ img = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY)
 W, H = img.shape
 
 # resize image
-img = cv2.resize(img, (W // 4, H // 4))
+img = cv2.resize(img, (H // 2, W // 2))
 
-img_rgb = cv2.resize(img_rgb, (W // 4, H // 4))
+img_rgb = cv2.resize(img_rgb, (H // 2, W // 2))
+
 image_points = get_image_point(img)
+
+model_points = np.array([
+    [0., 0., 0.],
+    [8., 0., 0.],
+    [0., 8., 0.],
+    [8., 8., 0.],
+
+], np.float32)
+
+# image_points = np.array(
+#
+#     [
+#         [248., 296.],
+#         [497., 314.],
+#         [186., 517.],
+#         [486., 545.],
+#     ]
+#
+#     , dtype=np.float32)
 
 for i, (x, y) in enumerate(image_points.astype(int)):
     # draw the circle in the output image, then draw a rectangle
     # corresponding to the center of the circle
     cv2.putText(img_rgb, "centroid: " + str(i), (x - 25, y - 25), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
 
-model_points = np.array([
-    [-4, 4, 0],
-    [4, 4, 0],
-    [-4, -4, 0],
-    [4, -4, 0],
-
-], np.float32)
-
+# cv2.imshow('img', img_rgb)
+#
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
 axis = np.float32([[3, 0, 0], [0, 3, 0], [0, 0, -3]]).reshape(-1, 3)
 
 (success, rotation_vector, translation_vector) = cv2.solvePnP(model_points, image_points, mtx, dist)

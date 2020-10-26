@@ -9,7 +9,7 @@ DIR_INPUT = 'data/blob'
 PATH = os.path.join(os.getcwd(), DIR_INPUT)
 images = os.listdir(PATH)
 
-img_path = os.path.join(PATH, images[0])
+img_path = os.path.join(PATH, images[1])
 
 # read image
 
@@ -20,7 +20,7 @@ img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
 W, H = img.shape
 
 # resize image
-img = cv2.resize(img, (W // 4, H // 4))
+img = cv2.resize(img, (H // 2, W // 2))
 detector = cv2.SimpleBlobDetector_create()
 
 # Detect the blobd in the image
@@ -38,3 +38,10 @@ cv2.waitKey(0)
 
 cv2.destroyAllWindows()
 
+
+# Iterate until x becomes 0
+x = 6
+while x:
+    print(x)
+    x -= 1
+# Prints 6 5 4 3 2 1
